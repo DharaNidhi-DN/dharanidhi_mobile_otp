@@ -1,0 +1,62 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: mobile_otp_db
+    environment:
+      POSTGRES_USER: mobile_otp
+      POSTGRES_PASSWORD: mobile_otp
+      POSTGRES_DB: mobile_otp
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mobile_otp -d mobile_otp"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  python-backend:
+    image: python:3.13-slim
+    container_name: mobile_otp_backend
+    working_dir: /app
+    volumes:
+      - ../python-backend:/app
+    env_file:
+      - ../python-backend/.env.local
+    environment:
+      DATABASE_URL: postgresql+psycopg://mobile_otp:mobile_otp@db:5432/mobile_otp
+      OTP_EXPIRY_SECONDS: 300
+      APP_ENV: docker
+      CORS_ALLOW_ORIGINS: http://localhost:4000,http://127.0.0.1:4000
+      CORS_ALLOW_PRIVATE_NETWORK: "false"
+    command: >
+      sh -c "python -m pip install --no-cache-dir -U pip &&
+             python -m pip install --no-cache-dir -e . 'psycopg[binary]' &&
+             python -m mobile_otp.main"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  nextjs-frontend:
+    image: node:20-alpine
+    container_name: mobile_otp_frontend
+    working_dir: /app
+    volumes:
+      - ../nextjs-frontend:/app
+      - next_node_modules:/app/node_modules
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+      NODE_ENV: development
+    command: >
+      sh -c "npm install && npm run dev -- -H 0.0.0.0 -p 4000"
+    ports:
+      - "4000:4000"
+    depends_on:
+      - python-backend
+
+volumes:
+  postgres_data:
+  next_node_modules:
