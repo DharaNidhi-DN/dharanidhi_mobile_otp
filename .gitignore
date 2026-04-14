@@ -1,2 +1,5 @@
 /nextjs-fronend/node_modules
 /nextjs-fronend/dist
+
+/python-backend/dist
+/python-backend/node_module
