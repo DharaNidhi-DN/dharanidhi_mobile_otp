@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { email = "saikumar.k1103@gmail.com" }
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.13.2",
     "fastapi>=0.135.1",
@@ -16,6 +16,8 @@ dependencies = [
     "psycopg[binary]>=3.2.0",
     "sqlalchemy>=2.0.48",
     "uvicorn>=0.41.0",
+    "requests>=2.33.1",
+    "requires>=0.12.1",
 ]
 
 [project.scripts]

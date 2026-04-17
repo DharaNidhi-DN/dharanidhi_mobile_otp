@@ -1,5 +1,22 @@
-/nextjs-fronend/node_modules
-/nextjs-fronend/dist
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
 
+# Frontend
+/nextjs-frontend/node_modules
+/nextjs-frontend/dist
+/nextjs-frontend/.next
+/nextjs-frontend/package-lock.json
+
+# Backend
 /python-backend/dist
-/python-backend/node_module
+/python-backend/node_modules
+/python-backend/.venv
+/python-backend/__pycache__
+/python-backend/*.egg-info
+
+# Environment
+.env.local
+.env*.local

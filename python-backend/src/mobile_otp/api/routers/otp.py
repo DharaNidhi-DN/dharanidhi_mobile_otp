@@ -33,6 +33,36 @@ async def send_otp(
             extra={"phone": mask_phone(payload.phone_number), "channel": payload.channel}
         )
         otp_request = await service.send_otp(payload.phone_number, payload.channel)
+    except httpx.HTTPStatusError as exc:
+        detail = "Twilio verification request failed"
+        try:
+            error_data = exc.response.json()
+            error_message = error_data.get("message")
+            error_code = error_data.get("code")
+            if error_message:
+                detail = error_message
+            logger.warning(
+                "api_send_otp_failed",
+                extra={
+                    "error": exc.__class__.__name__,
+                    "status_code": exc.response.status_code,
+                    "twilio_code": error_code,
+                    "twilio_message": error_message
+                }
+            )
+        except Exception as e:
+            logger.warning(
+                "api_send_otp_failed",
+                extra={
+                    "error": exc.__class__.__name__,
+                    "status_code": exc.response.status_code,
+                    "parse_error": str(e)
+                }
+            )
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=detail
+        ) from exc
     except httpx.HTTPError as exc:
         logger.warning(
             "api_send_otp_failed",
@@ -80,6 +110,36 @@ async def verify_otp(
         raise HTTPException(
             status_code=status.HTTP_410_GONE,
             detail=str(exc)
+        ) from exc
+    except httpx.HTTPStatusError as exc:
+        detail = "Twilio verification check failed"
+        try:
+            error_data = exc.response.json()
+            error_message = error_data.get("message")
+            error_code = error_data.get("code")
+            if error_message:
+                detail = error_message
+            logger.warning(
+                "api_verify_twilio_failed",
+                extra={
+                    "error": exc.__class__.__name__,
+                    "status_code": exc.response.status_code,
+                    "twilio_code": error_code,
+                    "twilio_message": error_message
+                }
+            )
+        except Exception as e:
+            logger.warning(
+                "api_verify_twilio_failed",
+                extra={
+                    "error": exc.__class__.__name__,
+                    "status_code": exc.response.status_code,
+                    "parse_error": str(e)
+                }
+            )
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=detail
         ) from exc
     except httpx.HTTPError as exc:
         logger.warning(
